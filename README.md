@@ -2,6 +2,8 @@
 
 Demo de conciliação financeira em **Java 21 e Spring Boot**. Importe o CSV de vendas e o relatório de repasses da operadora para comparar as transações pelo identificador externo. O botão **Usar dados de exemplo** carrega um cenário com todas as situações.
 
+[**Testar a demo online**](https://bateconta.onrender.com/)
+
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/DandaraEmiliano/bateconta)
 
 ![Painel do BateConta com o resumo da conciliação e as diferenças por transação](docs/painel.png)
