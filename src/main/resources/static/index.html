@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Concilie vendas e repasses em CSV e entenda onde os valores divergem.">
+  <meta name="theme-color" content="#211737">
+  <title>BateConta · Conciliação de pagamentos</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container top-content">
+      <a href="/" class="brand" aria-label="BateConta, início"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span>Bate<span>Conta</span></a>
+      <nav aria-label="Navegação"><a href="#importar">Importar arquivos</a><a id="results-link" href="#resultados" hidden>Resultados</a></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy">
+        <h1 id="title">Conciliação de<br class="desktop-break"> pagamentos</h1>
+        <p>Compare as vendas da loja com os repasses da operadora e encontre diferenças por transação.</p>
+        <button class="button button-lime" id="sample" type="button">Usar dados de exemplo</button>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit one"></div><div class="art-orbit two"></div>
+        <div class="art-sheet sheet-back"><i></i><i></i><i></i></div>
+        <div class="art-sheet sheet-front"><i></i><i></i><i></i></div>
+        <span class="art-check"></span>
+      </div>
+    </section>
+
+    <section id="importar" class="import-section" aria-labelledby="import-title">
+      <div class="section-heading">
+        <h2 id="import-title">Importar arquivos</h2>
+        <p>Dois CSVs em UTF-8, com até 1 MB e 5.000 registros cada.</p>
+      </div>
+      <form id="import-form">
+        <div class="file-grid">
+          <div class="file-card" data-file="vendas">
+            <div class="file-top"><span class="file-icon file-sales" aria-hidden="true">≡</span><div><h3>Vendas da loja</h3><p>Valor bruto e taxa por transação</p></div></div>
+            <label class="drop-target">
+              <input name="vendas" type="file" accept=".csv,text/csv" aria-label="CSV de vendas" aria-describedby="vendas-file">
+              <span id="vendas-file">Escolha ou arraste seu CSV</span>
+            </label>
+            <a class="template-link" href="/exemplos/vendas.csv" download>Baixar modelo de vendas</a>
+          </div>
+          <div class="file-card" data-file="repasses">
+            <div class="file-top"><span class="file-icon file-payouts" aria-hidden="true">≋</span><div><h3>Repasses da operadora</h3><p>Valor recebido por transação</p></div></div>
+            <label class="drop-target">
+              <input name="repasses" type="file" accept=".csv,text/csv" aria-label="CSV de repasses" aria-describedby="repasses-file">
+              <span id="repasses-file">Escolha ou arraste seu CSV</span>
+            </label>
+            <a class="template-link" href="/exemplos/repasses.csv" download>Baixar modelo de repasses</a>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="button button-primary" id="run" type="submit">Conciliar pagamentos</button>
+          <p>Os arquivos são processados na hora.</p>
+        </div>
+        <p class="notice" id="message" role="status" hidden></p>
+      </form>
+    </section>
+
+    <section id="resultados" class="results" aria-labelledby="results-title" hidden>
+      <div class="section-heading results-heading" tabindex="-1" id="result-focus">
+        <div><h2 id="results-title">Resultado da conciliação</h2><p id="result-meta"></p></div>
+        <span id="result-source" class="source-label"></span>
+      </div>
+      <div id="stats" class="stats" aria-label="Resumo por situação"></div>
+      <div class="report-card">
+        <div class="table-tools">
+          <div><h3>Transações</h3><p id="filtered-count" aria-live="polite"></p></div>
+          <div class="filters">
+            <div><label for="search">Buscar ID</label><input id="search" type="search" placeholder="Ex. BC-1051" maxlength="64"></div>
+            <div><label for="filter">Situação</label><select id="filter"><option value="ALL">Todas</option></select></div>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de transações">
+          <table>
+            <thead><tr><th scope="col">Transação</th><th scope="col">Situação</th><th scope="col">Esperado</th><th scope="col">Recebido</th><th scope="col">Diferença</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-results" hidden>Nenhuma transação corresponde aos filtros.</p>
+        <div id="pagination" class="pagination" hidden>
+          <button class="button button-outline" id="prev" type="button">Anterior</button>
+          <span id="page-info"></span>
+          <button class="button button-outline" id="next" type="button">Próxima</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="detail" aria-labelledby="detail-title">
+    <div class="detail-header"><div><p>Transação</p><h2 id="detail-title"></h2></div><button class="close" id="close" type="button" aria-label="Fechar">×</button></div>
+    <span id="detail-status" class="badge"></span><p class="detail-explain" id="detail-explain"></p>
+    <dl class="detail-values">
+      <div><dt>Líquido esperado</dt><dd id="detail-expected"></dd></div>
+      <div><dt>Valor repassado</dt><dd id="detail-actual"></dd></div>
+      <div><dt>Diferença</dt><dd id="detail-difference"></dd></div>
+    </dl>
+    <div class="detail-records">
+      <div><h3>Vendas importadas</h3><ul id="detail-sales"></ul></div>
+      <div><h3>Repasses importados</h3><ul id="detail-payouts"></ul></div>
+    </div>
+  </dialog>
+  <footer class="container footer"><span>BateConta</span><span>Conciliação de pagamentos</span></footer>
+</body>
+</html>
